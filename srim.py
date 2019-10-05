@@ -97,7 +97,7 @@ def run_sims(velocities, target_symbols, beams, num_histories=10000, new_file=Fa
                 stopped_particle_coords = np.genfromtxt(f'./SRIM Outputs/RANGE_3D_{beam_symbol}_{target_symbols[target_index]}_{index}.txt', skip_header=17)
                 print(f'E: {energy_kev} keV R: {np.mean(stopped_particle_coords[:,1])} A')
 
-def plot_distributions(velocities, target_symbols):
+def plot_distributions(velocities, target_symbols, max_depths):
     num_bins = 25
     num_velocities = len(velocities)
     num_distances = 50
@@ -129,7 +129,9 @@ def plot_distributions(velocities, target_symbols):
         std_H = np.zeros(len(energies_kev_H))
         std_He = np.zeros(len(energies_kev_He))
 
-        peak_indices = [0, 50, 100, 150, 200]
+        #peak_indices = [0, 50, 100, 150, 200]
+        peak_indices = [0, 1, 2, 3, 4]
+
 
         for index, velocity in enumerate(velocities/c):
             stopped_particle_coords_H = np.genfromtxt(f'./SRIM Outputs/RANGE_3D_H_{target_symbol}_{index}.txt', skip_header=17)
@@ -156,7 +158,7 @@ def plot_distributions(velocities, target_symbols):
             centers_He = bins_high_res_He[:-1] + (bins_high_res_He[1:] - bins_high_res_He[:-1])/2.
 
             if index==peak_indices[0] or index==peak_indices[1] or index==peak_indices[2] or index==peak_indices[3] or index==peak_indices[4]:
-                plt.figure(3)
+                plt.figure(target_index*3)
 
                 H_handle = plt.plot(centers_H*A_to_mm, values_high_res_H/np.max(values_high_res_H),
                     color='black', linewidth=lw, label='H')
@@ -178,19 +180,20 @@ def plot_distributions(velocities, target_symbols):
             print(f'{velocity/c} {means_H[velocity_index]} {std_H[velocity_index]} {means_He[velocity_index]} {std_He[velocity_index]}', file=output_file)
         output_file.close()
 
-        plt.figure(3, figsize=(6,4))
+        plt.figure(target_index*3, figsize=(6,4))
         plt.title(f'Depth Distributions in {target_symbol}')
         plt.xlabel('Depth $x$ (mm)')
         plt.ylabel('Stopped Ion Fraction $f(x)$ (arb. units)')
-        plt.xticks(np.arange(0, 40, 5))
+        plt.xticks(np.arange(0, max_depths[target_index], 5))
         plt.yticks([0.0, 0.5, 1.0])
         plt.legend(handles=[H_handle, He_handle], loc=1)
-        plt.axis([-2, 30, 0, 1.3])
-        peak_shifts = [-1.5, 0., 0.25, 0.25, 0.25]
+        plt.axis([-1, max_depths[target_index], 0, 1.3])
+        #peak_shifts = [-1.5, 0., 0.25, 0.25, 0.25]
+        peak_shifts = np.array([-0.05, 0., 0.025, 0.025, 0.025])*max_depths[target_index]
         peak_locations = [(means_H[peak_index] + peak_shifts[index], 1.025) for index, peak_index in enumerate(peak_indices)]
         v = 0.1
         for index, location in enumerate(peak_locations):
-            plt.text(*location, f'{np.round(velocities[peak_indices[index]]/c,1)}c')
+            plt.text(*location, f'{np.round(velocities[peak_indices[index]]/c,2)}c')
             v += 0.1
         plt.savefig(f'depth_distro_3_{target_symbol}.pdf', format='pdf', dpi=300)
 
@@ -240,6 +243,8 @@ def plot_distributions(velocities, target_symbols):
         ax.set_yticks(np.arange(0.0, 26, 5))
         plt.savefig(f'depth_distro_6_{target_symbol}.pdf', format='pdf', dpi=300)
 
+    plt.show()
+
 
 if __name__ == '__main__':
     H = {
@@ -257,8 +262,9 @@ if __name__ == '__main__':
     }
 
     beams = [H, He]
-    target_symbols = ['Al', 'W']
+    target_symbols = ['Si', 'Al', 'W']
+    max_depths = [15, 12.5, 5]
 
     velocities = np.arange(0.1, 0.301, 0.05)*c
-    run_sims(velocities, target_symbols, beams, num_histories=10000, new_file=True)
-    plot_distributions(velocities, target_symbols)
+    #run_sims(velocities, target_symbols, beams, num_histories=10000, new_file=True)
+    plot_distributions(velocities, target_symbols, max_depths)
