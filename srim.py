@@ -93,8 +93,8 @@ def run_sims(velocities, target_symbols, beams, num_histories=10000, new_file=Fa
                     target_symbols[target_index], target_species.ZZ, target_species.M,
                     target_species.ED, target_species.BE, target_species.SBV)
                 os.system('TRIM.exe')
-                os.system(f'cp "./SRIM Outputs/RANGE_3D.txt" "./SRIM Outputs/RANGE_3D_{beam_symbol}_{target_symbols[target_index]}_{index}.txt"')
-                stopped_particle_coords = np.genfromtxt(f'./SRIM Outputs/RANGE_3D_{beam_symbol}_{target_symbols[target_index]}_{index}.txt', skip_header=17)
+                os.system(f'cp "./SRIM Outputs/RANGE_3D.txt" "./data/RANGE_3D_{beam_symbol}_{target_symbols[target_index]}_{index}.txt"')
+                stopped_particle_coords = np.genfromtxt(f'./data/RANGE_3D_{beam_symbol}_{target_symbols[target_index]}_{index}.txt', skip_header=17)
                 print(f'E: {energy_kev} keV R: {np.mean(stopped_particle_coords[:,1])} A')
 
 def plot_distributions(velocities, target_symbols, max_depths):
@@ -134,8 +134,8 @@ def plot_distributions(velocities, target_symbols, max_depths):
 
 
         for index, velocity in enumerate(velocities/c):
-            stopped_particle_coords_H = np.genfromtxt(f'./SRIM Outputs/RANGE_3D_H_{target_symbol}_{index}.txt', skip_header=17)
-            stopped_particle_coords_He = np.genfromtxt(f'./SRIM Outputs/RANGE_3D_He_{target_symbol}_{index}.txt', skip_header=17)
+            stopped_particle_coords_H = np.genfromtxt(f'./data/RANGE_3D_H_{target_symbol}_{index}.txt', skip_header=17)
+            stopped_particle_coords_He = np.genfromtxt(f'./data/RANGE_3D_He_{target_symbol}_{index}.txt', skip_header=17)
 
             x_H = stopped_particle_coords_H[:,1]
             x_He = stopped_particle_coords_He[:,1]
@@ -184,7 +184,7 @@ def plot_distributions(velocities, target_symbols, max_depths):
         plt.title(f'Depth Distributions in {target_symbol}')
         plt.xlabel('Depth $x$ (mm)')
         plt.ylabel('Stopped Ion Fraction $f(x)$ (arb. units)')
-        plt.xticks(np.arange(0, max_depths[target_index], 5))
+        plt.xticks(np.arange(0, max_depths[target_index], 2))
         plt.yticks([0.0, 0.5, 1.0])
         plt.legend(handles=[H_handle, He_handle], loc=1)
         plt.axis([-1, max_depths[target_index], 0, 1.3])
@@ -263,7 +263,7 @@ if __name__ == '__main__':
 
     beams = [H, He]
     target_symbols = ['Si', 'Al', 'W']
-    max_depths = [15, 12.5, 5]
+    max_depths = [12, 10, 3]
 
     velocities = np.arange(0.1, 0.301, 0.05)*c
     #run_sims(velocities, target_symbols, beams, num_histories=10000, new_file=True)
